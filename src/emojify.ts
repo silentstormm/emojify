@@ -57,7 +57,8 @@ function getEmoji(word: string) {
 
 export function emojify(
   target: vscode.TextEditor,
-  decorations: { [emoji: string]: vscode.TextEditorDecorationType }
+  decorations: { [emoji: string]: vscode.TextEditorDecorationType },
+  lastUsed?: string[]
 ) {
   console.log('Decorating...')
 
@@ -88,8 +89,49 @@ export function emojify(
           new vscode.Position(lineindex, index + word.length)
         )
         decorationArray[emoji].push({ range })
-      }
+      } else {
+        let _index = index
+        word.split('_').forEach((_word) => {
+          let _emoji = getEmoji(_word)
+          if (_emoji) {
+            if (!decorationArray[_emoji]) {
+              decorationArray[_emoji] = []
+            }
 
+            let _range = new vscode.Range(
+              new vscode.Position(lineindex, _index),
+              new vscode.Position(lineindex, _index + _word.length)
+            )
+            decorationArray[_emoji].push({ range: _range })
+          } else {
+            let camelindex = index
+            _word
+              .replace(/([a-z])([A-Z])/g, '$1 $2')
+              .split(' ')
+              .forEach((camelword) => {
+                let camelemoji = getEmoji(camelword)
+                if (camelemoji) {
+                  if (!decorationArray[camelemoji]) {
+                    decorationArray[camelemoji] = []
+                  }
+
+                  let camelrange = new vscode.Range(
+                    new vscode.Position(lineindex, camelindex),
+                    new vscode.Position(
+                      lineindex,
+                      camelindex + camelword.length
+                    )
+                  )
+                  decorationArray[camelemoji].push({ range: camelrange })
+                }
+                camelindex += camelword.length
+                camelindex
+              })
+            _index += _word.length
+            _index++
+          }
+        })
+      }
       index += word.length
       index++
     })
@@ -97,18 +139,24 @@ export function emojify(
 
   console.log(decorationArray)
 
-  const editors = vscode.window.visibleTextEditors.filter(
-    (editor) => target.document.uri === editor.document.uri
-  )
+  if (lastUsed) {
+    lastUsed.forEach((emoji) => {
+      target.setDecorations(decorations[emoji], [])
+    })
+  }
+
+  let used = []
 
   for (const decoration in decorationArray) {
     if (decorations.hasOwnProperty(decoration)) {
-      editors.forEach((editor) =>
-        editor.setDecorations(
-          decorations[decoration],
-          decorationArray[decoration]
-        )
+      target.setDecorations(
+        decorations[decoration],
+        decorationArray[decoration]
       )
+
+      used.push(decoration)
     }
   }
+
+  return used
 }
