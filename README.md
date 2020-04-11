@@ -1,6 +1,6 @@
 # Emojify
 
-You absolutely need this extension. TLDR: Changes your code into an illegible mess of emojis.
+You absolutely need this extension.
 
 ---
 
