@@ -2,7 +2,7 @@
   "name": "emojify",
   "displayName": "emojify",
   "description": "Turns your code into an illegible mess of emojis.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "icon": "images/icon.png",
   "license": "MIT",
   "repository": {
